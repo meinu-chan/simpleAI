@@ -19,7 +19,7 @@
 </head>
 <body>
 	
-	<canvas id="canv" style="display: block;">Ваш браузер устарел, обновитесь.</canvas>
+	<canvas id="canv" style="display: block;"></canvas>
 
 	<script>
 		function DCanvas(el)
@@ -154,12 +154,12 @@
 			})
 		}
 
-		let vector = [];
 		// let net = null;
 
 		const d = new DCanvas(document.getElementById('canv'));
 
 		document.addEventListener('keypress', function(e) {
+            let vector = [];
 			if( e.key.toLowerCase() == 'c' )
 			{
 				d.clear();
@@ -184,20 +184,24 @@
 					};
 				}
                 const {input , output} = train_data
-                axios.post(`http://127.0.0.1:5000/data?input=${input}&output=${output}`)
+                axios.post(`/data?input=${input}&output=${output}`)
                 .then( (res) => {
                     // console.log(res.status)
                 })
 			}
 
-			// if( e.key.toLowerCase() == 'b' )
-			// {
-			// 	// net = new brain.NeuralNetwork();
-			// 	// net.train(train_data, {log: true});
+			if( e.key.toLowerCase() == 'b' )
+			{
+                vector = d.calculate(true)
 
-			// 	// const result = brain.likely(d.calculate(), net);
-			// 	// alert(result);
-			// }
+                axios.get(`/answer?vector=${vector}`)
+			}
+
+            if( e.key.toLowerCase() == 't' )
+			{
+                axios.get(`/train`)
+			}
+
 		});
 	</script>
 
