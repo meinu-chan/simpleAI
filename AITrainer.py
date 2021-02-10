@@ -5,6 +5,7 @@ class AITrainer:
     def __init__(self, f_name):
         self.f_name = f_name
         self.weight = self.file_getter()
+        print(self.weight)
 
     def _sigmoid(self, x):
         return 1/(1+np.exp(-x))
@@ -38,16 +39,22 @@ class AITrainer:
     def file_getter(self):
         try:
             file = open(self.f_name)
-            if(len(file.read()) == 0):
-                raise Exception
         except:
             return 0
+        # try:
+        #     file = open(self.f_name)
+        #     if(len(file.read()) == 0):
+        #         raise Exception
+        # except:
+        #     file = open(self.f_name)
 
+        
         try:
             data = [float(num) for num in file.read().split(",")[:-1]]
         except Exception as err:
             print(err)
-            return err 
+            file.close()
+            raise err 
 
         file.close()
             
