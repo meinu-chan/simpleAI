@@ -29,8 +29,8 @@
 
 			let is_mouse_down = false;
 
-			canv.width = 500;
-			canv.height = 500;
+			canv.width = 560;
+			canv.height = 560;
 
 			this.drawLine = function(x1, y1, x2, y2, color = 'gray') {
 				ctx.beginPath();
@@ -85,12 +85,14 @@
 				const vector = [];
 				let __draw = [];
 
-				for( let x = 0; x < w; x += xStep )
+				for( let y = 0; y < h; y += yStep )
 				{
-					for( let y = 0; y < h; y += yStep )
+					const nestedArray = []
+
+					for( let x = 0; x < w; x += xStep )
 					{
 						const data = ctx.getImageData(x, y, xStep, yStep);
-
+						
 						let nonEmptyPixelsCount = 0;
 						for( i = 0; i < data.data.length; i += 10 )
 						{
@@ -107,8 +109,10 @@
 							__draw.push([x, y, xStep, yStep]);
 						}
 
-						vector.push(nonEmptyPixelsCount > 1 ? 1 : 0);
+						nestedArray.push(nonEmptyPixelsCount)
 					}
+
+					vector.push(nestedArray)
 				}
 
 				if( draw )
@@ -139,13 +143,13 @@
 				{
 					ctx.fillStyle = 'red';
 					ctx.strokeStyle = 'red';
-					ctx.lineWidth = pixel;
+					ctx.lineWidth = pixel / 2;
 
 					ctx.lineTo(e.offsetX, e.offsetY);
 					ctx.stroke();
 
 					ctx.beginPath();
-					ctx.arc(e.offsetX, e.offsetY, pixel / 2, 0, Math.PI * 2);
+					ctx.arc(e.offsetX, e.offsetY, pixel / 4, 0, Math.PI * 2);
 					ctx.fill();
 
 					ctx.beginPath();
@@ -168,40 +172,11 @@
 			if( e.key.toLowerCase() == 'v' )
 			{
 				vector = d.calculate(true);
-				console.log(vector)
-				//train
-				if( confirm('Positive?') )
-				{
-					train_data = {
-						input: vector,
-						output: 1
-					};
-				} else
-				{
-					train_data = {
-						input: vector,
-						output: 0
-					};
-				}
-                const {input , output} = train_data
-                axios.post(`/data?input=${input}&output=${output}`)
-                .then( (res) => {
-                    // console.log(res.status)
-                })
+
+                axios.post(`/data`, {
+					vector
+				})
 			}
-
-			if( e.key.toLowerCase() == 'b' )
-			{
-                vector = d.calculate(true)
-
-                axios.get(`/answer?vector=${vector}`)
-			}
-
-            if( e.key.toLowerCase() == 't' )
-			{
-                axios.get(`/train`)
-			}
-
 		});
 	</script>
 

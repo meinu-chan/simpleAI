@@ -1,3 +1,6 @@
-/.history
-/env
-/__pycache__
+.history
+env
+__pycache__
+.vscode
+.history
+trainedModel
