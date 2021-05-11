@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response
 import numpy as np
+import threading
+import concurrent.futures
 import matplotlib.pyplot as plt
 
 from AI import predict_digit
@@ -14,15 +16,10 @@ def hello():
 def get_new_data():
     vector = request.get_json()['vector']
 
-    # plt.figure()
-    # plt.imshow(vector)
-    # plt.colorbar()
-    # plt.grid(False)
-    # plt.show()
+    predict = predict_digit(vector)
+    print(predict)
 
-    predict_digit(vector)
+    return predict
 
-    return render_template("index.html")
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug = True)

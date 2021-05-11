@@ -2,7 +2,10 @@ import tensorflow as tf
 import numpy as  np
 import os
 import sys
+import threading
 import matplotlib.pyplot as plt
+# import datetime
+from tensorboard.plugins.hparams import api as hp
 
 class_names = ['zero', 'one', 'two', 'three', 'four',
             'five', 'six', 'seven', 'eight', 'nine']
@@ -11,10 +14,23 @@ mnist = tf.keras.datasets.mnist
 
 (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
 
-def trainModel():
-    weights = tf.keras.callbacks.ModelCheckpoint(filepath=save_path, save_weights_only=True, verbose=1)
+train_images = train_images / 255
+test_images = test_images / 255
 
-    model.fit(train_images, train_labels, epochs=10, callbacks=[weights])
+def trainModel():
+    callbacks = tf.keras.callbacks
+
+    weights = callbacks.ModelCheckpoint(filepath=save_path, save_weights_only=True, verbose=1)
+
+    tensorboard = callbacks.TensorBoard(
+    log_dir=log_dir, histogram_freq=1)
+
+    # hparams_callback = hp.KerasCallback(log_dir, {
+    # 'num_relu_units': 512,
+    # 'dropout': 0.2
+    # })
+
+    model.fit(train_images, train_labels, epochs=5, callbacks=[weights, tensorboard])
 
     os.listdir(save_dir)
 
@@ -30,7 +46,7 @@ def loadModel():
     print(f"Restored model, accuracy: {100 * acc}%")
 
 def predict_digit(arr):
-    arr = np.array(arr)
+    arr = np.array(arr)/np.amax(arr)
 
     arr = np.expand_dims(arr, 0)
 
@@ -38,22 +54,19 @@ def predict_digit(arr):
 
     predict = probability_model.predict(arr)
 
-    print(class_names[np.argmax(predict)])
+    # print(predict[0])
 
-    plot_value_array(predict[0])
-    plt.show()
-
-def plot_value_array( predict):
-  plt.grid(False)
-  plt.xticks(range(10))
-  plt.yticks([])
-  thisplot = plt.bar(range(10), predict, color="#777777")
-  plt.ylim([0, 1])
-  return
+    return class_names[np.argmax(predict)]
 
 model = tf.keras.Sequential([
     tf.keras.layers.Flatten(input_shape=(28, 28)),
-    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(256, activation=tf.nn.relu),
+    tf.keras.layers.Dense(128, activation=tf.nn.relu),
+    tf.keras.layers.Dense(64, activation=tf.nn.relu),
+    tf.keras.layers.Dense(32, activation=tf.nn.relu),
+    tf.keras.layers.Dense(16, activation=tf.nn.relu),
+    # tf.keras.layers.Dense(16, activation=tf.nn.relu),
+    # tf.keras.layers.Dense(16, activation=tf.nn.relu),
     tf.keras.layers.Dense(10)
 ])
 
@@ -63,6 +76,7 @@ model.compile(optimizer='adam',
 
 save_path = 'trainedModel/weight.ckpt'
 save_dir = os.path.dirname(save_path)
+log_dir="logs/" 
 
 try:
     loadModel()
